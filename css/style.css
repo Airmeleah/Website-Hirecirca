@@ -198,13 +198,14 @@ p { margin: 0; }
   justify-content: space-between;
   height: 82px;
 }
-.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-logo { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .nav-logo img { height: 34px; width: auto; }
 .nav-logo span {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 20px;
   color: var(--ink);
+  white-space: nowrap;
 }
 .nav-links {
   display: flex;
@@ -234,7 +235,7 @@ p { margin: 0; }
 .nav-links a:hover { color: var(--violet-700); }
 .nav-links a:hover::after { right: 0; }
 
-.nav-cta { display: flex; align-items: center; gap: 12px; }
+.nav-cta { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 .nav-toggle {
   display: none;
   background: none; border: none; cursor: pointer;
@@ -248,6 +249,14 @@ p { margin: 0; }
   .nav-links { display: none; }
   .nav-cta .btn-outline { display: none; }
   .nav-toggle { display: flex; }
+}
+/* On phones the nav CTA competes with the logo — the mobile menu carries it instead */
+@media (max-width: 620px) {
+  .nav-cta .btn-primary { display: none; }
+  .navbar .container { height: 70px; }
+  .nav-logo img { height: 30px; }
+  .nav-logo span { font-size: 18px; }
+  .mobile-menu { top: 70px; }
 }
 
 .mobile-menu {
@@ -777,19 +786,31 @@ p { margin: 0; }
 .carousel-dots {
   display: flex;
   justify-content: center;
-  gap: 9px;
+  align-items: center;
+  gap: 2px;
   margin-bottom: 64px;
 }
+/* transparent 40px button for a comfortable tap target; the visible
+   dot is drawn by the pseudo-element so it stays small and round */
 .carousel-dots button {
-  width: 7px; height: 7px;
-  border-radius: 999px;
-  border: none;
-  background: var(--violet-200);
-  cursor: pointer;
+  width: 40px;
+  height: 40px;
   padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.carousel-dots button::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--violet-200);
   transition: background 0.4s ease, width 0.5s var(--carousel-ease);
 }
-.carousel-dots button.active {
+.carousel-dots button.active::before {
   width: 26px;
   background: var(--brand-gradient);
 }
@@ -799,9 +820,14 @@ p { margin: 0; }
 }
 @media (max-width: 720px) {
   .carousel-arrow { display: none; }
-  .proof-carousel { height: 340px; gap: 9px; }
-  .proof-card { border-width: 2.5px; border-radius: 20px; }
-  .proof-card[data-state="hero"] { flex-grow: 20; }
+  .proof-carousel { height: 360px; gap: 8px; }
+  .proof-card { border-width: 2.5px; border-radius: 18px; }
+  /* six cards will not fit a phone: drop the most distant ones so the
+     hero keeps a readable width and the peekers stay visible */
+  .proof-card[data-state="sliver"] { display: none; }
+  .proof-card[data-state="hero"] { flex-grow: 11; }
+  .proof-card[data-state="near"] { flex-grow: 2.6; }
+  .proof-card[data-state="far"]  { flex-grow: 1.3; }
   .proof-tag { font-size: 11.5px; padding: 7px 11px; left: 10px; bottom: 10px; }
 }
 
