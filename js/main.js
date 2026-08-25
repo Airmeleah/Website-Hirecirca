@@ -41,7 +41,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   revealEls.forEach(el => io.observe(el));
 
-  /* -------------------------------------------------- proof carousel */
+  /* -------------------------------------------------- proof carousel
+     Material-3 style: the active card expands to a hero while its
+     neighbours compress by distance. Driven by an index, not scroll,
+     so the morph stays smooth and fully controllable. */
   const carousel = document.getElementById('proofCarousel');
   const prevBtn = document.getElementById('proofPrev');
   const nextBtn = document.getElementById('proofNext');
@@ -49,43 +52,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (carousel && dotsWrap) {
     const cards = Array.from(carousel.children);
+    let active = 0;
 
+    // one dot per card
     cards.forEach((_, i) => {
       const dot = document.createElement('button');
-      dot.setAttribute('aria-label', `Go to screenshot ${i + 1}`);
-      dot.addEventListener('click', () => {
-        cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      });
+      dot.setAttribute('aria-label', `Show screenshot ${i + 1} of ${cards.length}`);
+      dot.addEventListener('click', () => setActive(i));
       dotsWrap.appendChild(dot);
     });
     const dots = Array.from(dotsWrap.children);
 
-    const scrollByCard = (dir) => {
-      const card = cards[0];
-      const gap = parseFloat(getComputedStyle(carousel).gap) || 0;
-      carousel.scrollBy({ left: dir * (card.offsetWidth + gap), behavior: 'smooth' });
+    // distance from the active card decides how much room each one gets
+    const stateFor = (distance) => {
+      if (distance === 0) return 'hero';
+      if (distance === 1) return 'near';
+      if (distance === 2) return 'far';
+      return 'sliver';
     };
-    prevBtn.addEventListener('click', () => scrollByCard(-1));
-    nextBtn.addEventListener('click', () => scrollByCard(1));
 
-    let ticking = false;
-    const updateActiveDot = () => {
-      const center = carousel.scrollLeft + carousel.clientWidth / 2;
-      let closest = 0;
-      let closestDist = Infinity;
-      cards.forEach((card, i) => {
-        const dist = Math.abs((card.offsetLeft + card.offsetWidth / 2) - center);
-        if (dist < closestDist) { closestDist = dist; closest = i; }
+    function setActive(i) {
+      active = Math.max(0, Math.min(cards.length - 1, i));
+      cards.forEach((card, idx) => {
+        card.dataset.state = stateFor(Math.abs(idx - active));
+        card.setAttribute('aria-current', idx === active ? 'true' : 'false');
       });
-      dots.forEach((d, i) => d.classList.toggle('active', i === closest));
-      prevBtn.disabled = carousel.scrollLeft < 10;
-      nextBtn.disabled = carousel.scrollLeft > carousel.scrollWidth - carousel.clientWidth - 10;
-      ticking = false;
+      dots.forEach((d, idx) => d.classList.toggle('active', idx === active));
+      prevBtn.disabled = active === 0;
+      nextBtn.disabled = active === cards.length - 1;
+    }
+
+    // set when a swipe happened, so the trailing click doesn't fight it
+    let suppressClick = false;
+    cards.forEach((card, i) => card.addEventListener('click', () => {
+      if (suppressClick) { suppressClick = false; return; }
+      setActive(i);
+    }));
+    prevBtn.addEventListener('click', () => setActive(active - 1));
+    nextBtn.addEventListener('click', () => setActive(active + 1));
+
+    // keyboard
+    carousel.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); setActive(active + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); setActive(active - 1); }
+    });
+
+    // drag / swipe
+    let startX = null;
+    let dragging = false;
+    const SWIPE_THRESHOLD = 45;
+
+    const onDown = (x) => { startX = x; dragging = true; carousel.classList.add('dragging'); };
+    const onUp = (x) => {
+      if (!dragging || startX === null) return;
+      const dx = x - startX;
+      if (Math.abs(dx) > SWIPE_THRESHOLD) {
+        suppressClick = true;
+        setActive(active + (dx < 0 ? 1 : -1));
+      }
+      dragging = false;
+      startX = null;
+      carousel.classList.remove('dragging');
     };
-    carousel.addEventListener('scroll', () => {
-      if (!ticking) { requestAnimationFrame(updateActiveDot); ticking = true; }
-    }, { passive: true });
-    updateActiveDot();
+
+    carousel.addEventListener('pointerdown', (e) => onDown(e.clientX));
+    carousel.addEventListener('pointerup', (e) => onUp(e.clientX));
+    carousel.addEventListener('pointercancel', () => {
+      dragging = false; startX = null; carousel.classList.remove('dragging');
+    });
+
+    setActive(0);
   }
 
   /* -------------------------------------------------- contact form (no backend wired yet) */
