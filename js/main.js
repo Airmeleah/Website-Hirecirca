@@ -41,6 +41,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
   revealEls.forEach(el => io.observe(el));
 
+  /* -------------------------------------------------- proof carousel */
+  const carousel = document.getElementById('proofCarousel');
+  const prevBtn = document.getElementById('proofPrev');
+  const nextBtn = document.getElementById('proofNext');
+  const dotsWrap = document.getElementById('proofDots');
+
+  if (carousel && dotsWrap) {
+    const cards = Array.from(carousel.children);
+
+    cards.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.setAttribute('aria-label', `Go to screenshot ${i + 1}`);
+      dot.addEventListener('click', () => {
+        cards[i].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      });
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    const scrollByCard = (dir) => {
+      const card = cards[0];
+      const gap = parseFloat(getComputedStyle(carousel).gap) || 0;
+      carousel.scrollBy({ left: dir * (card.offsetWidth + gap), behavior: 'smooth' });
+    };
+    prevBtn.addEventListener('click', () => scrollByCard(-1));
+    nextBtn.addEventListener('click', () => scrollByCard(1));
+
+    let ticking = false;
+    const updateActiveDot = () => {
+      const center = carousel.scrollLeft + carousel.clientWidth / 2;
+      let closest = 0;
+      let closestDist = Infinity;
+      cards.forEach((card, i) => {
+        const dist = Math.abs((card.offsetLeft + card.offsetWidth / 2) - center);
+        if (dist < closestDist) { closestDist = dist; closest = i; }
+      });
+      dots.forEach((d, i) => d.classList.toggle('active', i === closest));
+      prevBtn.disabled = carousel.scrollLeft < 10;
+      nextBtn.disabled = carousel.scrollLeft > carousel.scrollWidth - carousel.clientWidth - 10;
+      ticking = false;
+    };
+    carousel.addEventListener('scroll', () => {
+      if (!ticking) { requestAnimationFrame(updateActiveDot); ticking = true; }
+    }, { passive: true });
+    updateActiveDot();
+  }
+
   /* -------------------------------------------------- contact form (no backend wired yet) */
   const form = document.getElementById('contactForm');
   const success = document.getElementById('formSuccess');
