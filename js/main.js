@@ -82,10 +82,78 @@ document.addEventListener('DOMContentLoaded', () => {
       nextBtn.disabled = active === cards.length - 1;
     }
 
+    // ---- lightbox: the carousel crops 26-53% off each screenshot, so the
+    // focused card opens the full image. First click focuses a card, a second
+    // click on the already-focused one opens it — the carousel keeps working.
+    const lb      = document.getElementById('lightbox');
+    const lbImg   = document.getElementById('lbImg');
+    const lbCap   = document.getElementById('lbCap');
+    const lbCount = document.getElementById('lbCount');
+    const lbStage = document.getElementById('lbStage');
+    const lbPrev  = document.getElementById('lbPrev');
+    const lbNext  = document.getElementById('lbNext');
+
+    const shots = cards.map((card) => {
+      const img = card.querySelector('img');
+      const tag = card.querySelector('.proof-tag');
+      return {
+        src: img ? img.getAttribute('src') : '',
+        alt: img ? img.getAttribute('alt') : '',
+        tag: tag ? tag.textContent.trim() : ''
+      };
+    });
+
+    let lbIndex = 0;
+    let lastFocused = null;
+
+    function renderShot(i) {
+      lbIndex = (i + shots.length) % shots.length;
+      const shot = shots[lbIndex];
+      lbImg.src = shot.src;
+      lbImg.alt = shot.alt;
+      lbCap.textContent = shot.tag;
+      lbCount.textContent = (lbIndex + 1) + ' / ' + shots.length;
+      lbStage.scrollTop = 0;   // a previous shot may have been scrolled down
+    }
+
+    function openLightbox(i) {
+      lastFocused = document.activeElement;
+      renderShot(i);
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+      lbPrev.focus();
+    }
+
+    function closeLightbox() {
+      lb.hidden = true;
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    lb.querySelectorAll('[data-lb-close]').forEach((el) =>
+      el.addEventListener('click', closeLightbox));
+    lbPrev.addEventListener('click', () => renderShot(lbIndex - 1));
+    lbNext.addEventListener('click', () => renderShot(lbIndex + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (lb.hidden) return;
+      if (e.key === 'Escape')     { e.preventDefault(); closeLightbox(); }
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); renderShot(lbIndex - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); renderShot(lbIndex + 1); }
+      // keep tabbing inside the dialog while it is open
+      if (e.key === 'Tab') {
+        const f = [lbPrev, lbNext, document.getElementById('lbClose')];
+        const at = f.indexOf(document.activeElement);
+        e.preventDefault();
+        f[(at + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+      }
+    });
+
     // set when a swipe happened, so the trailing click doesn't fight it
     let suppressClick = false;
     cards.forEach((card, i) => card.addEventListener('click', () => {
       if (suppressClick) { suppressClick = false; return; }
+      if (i === active) { openLightbox(i); return; }
       setActive(i);
     }));
     prevBtn.addEventListener('click', () => setActive(active - 1));

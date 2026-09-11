@@ -19,6 +19,8 @@
   --brand-gradient-soft: linear-gradient(135deg, #EFE2FF 0%, #E4CFFF 100%);
   /* for gradient-clipped TEXT on the dark ground — stays light end-to-end */
   --brand-gradient-text: linear-gradient(105deg, #FFFFFF 0%, #E9D5FF 42%, #C084FC 100%);
+  /* deeper ramp for dots carrying white type — light stops fail on white */
+  --brand-gradient-deep: linear-gradient(135deg, #8B3DE8 0%, #4C1D6E 100%);
 
   /* Dark canvas */
   --bg: #07060B;
@@ -396,9 +398,21 @@ p { margin: 0; }
 .hero-trust .avatars { display: flex; }
 .hero-trust .avatars span {
   width: 26px; height: 26px; border-radius: 50%;
-  background: var(--brand-gradient);
-  border: 2px solid rgba(255,255,255,0.22);
+  background: var(--brand-gradient-deep);
+  border: 2px solid rgba(255,255,255,0.28);
   margin-left: -8px;
+  /* initials sit centred in the dot, always white */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 .hero-trust .avatars span:first-child { margin-left: 0; }
 
@@ -525,6 +539,11 @@ p { margin: 0; }
   line-height: 1.75;
   color: var(--ink-soft);
   margin-bottom: 20px;
+  text-align: justify;
+  /* justify opens ugly rivers on a narrow measure — let long words break */
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
 .about-copy p:last-of-type { margin-bottom: 0; }
 .about-copy strong { color: var(--ink); }
@@ -1150,3 +1169,156 @@ p { margin: 0; }
   background: var(--violet-700); color: #fff; padding: 12px 20px; border-radius: 0 0 10px 0; z-index: 2000;
 }
 .skip-link:focus { left: 0; }
+
+/* ---------------------------------------------------------------- lightbox
+   The carousel crops 26-53% off these screenshots, and the payoff (the offer,
+   the amount) sits in the cropped half. The lightbox shows them whole:
+   contain-fit on desktop, natural-width + scroll on phones where shrinking
+   1080px of chat to fit the viewport would make it unreadable. */
+
+.proof-expand {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(7, 6, 11, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+.proof-expand svg { width: 12px; height: 12px; flex-shrink: 0; }
+/* only the focused card advertises it — the slivers have no room */
+.proof-card[data-state="hero"] .proof-expand { opacity: 1; transform: translateY(0); }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lightbox[hidden] { display: none; }
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 3, 8, 0.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: lbFade 0.25s ease;
+}
+.lightbox-shell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: min(92vw, 560px);
+  max-height: 94vh;
+  animation: lbRise 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lightbox-stage {
+  border-radius: 20px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: #0B0910;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 40px 120px -30px rgba(0, 0, 0, 0.9);
+  max-height: 84vh;
+}
+.lightbox-stage img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 84vh;
+  object-fit: contain;
+  margin: 0 auto;
+}
+.lightbox-bar {
+  display: flex; align-items: center; gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+}
+.lightbox-cap {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.82);
+  text-align: center;
+  line-height: 1.5;
+}
+.lightbox-count {
+  font-size: 12px; font-weight: 700;
+  color: var(--chip-ink);
+  background: var(--chip-bg);
+  padding: 5px 11px; border-radius: 999px;
+  white-space: nowrap;
+}
+.lightbox-close,
+.lightbox-nav {
+  position: absolute;
+  z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+.lightbox-close:hover,
+.lightbox-nav:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.07); }
+.lightbox-close {
+  top: -46px; right: 0;
+  width: 38px; height: 38px;
+}
+.lightbox-close svg { width: 18px; height: 18px; }
+.lightbox-nav {
+  top: 50%;
+  width: 44px; height: 44px;
+  margin-top: -22px;
+}
+.lightbox-nav svg { width: 20px; height: 20px; }
+.lightbox-nav.prev { left: -60px; }
+.lightbox-nav.next { right: -60px; }
+.lightbox-nav:disabled { opacity: 0.3; cursor: default; transform: none; }
+
+@keyframes lbFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lbRise {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* phones: arrows move below the image, and the screenshot keeps its natural
+   width so the chat text stays readable — the stage scrolls instead */
+@media (max-width: 760px) {
+  .lightbox { padding: 14px; }
+  .lightbox-shell { max-width: 100%; max-height: 96vh; gap: 10px; }
+  .lightbox-stage { max-height: 74vh; border-radius: 16px; }
+  .lightbox-stage img { max-height: none; width: 100%; }
+  .lightbox-close { top: 8px; right: 8px; background: rgba(7, 6, 11, 0.82); }
+  /* no room beside the image on a phone, so the arrows overlay its edges */
+  .lightbox-nav { width: 40px; height: 40px; margin-top: -20px; background: rgba(7, 6, 11, 0.7); }
+  .lightbox-nav svg { width: 18px; height: 18px; }
+  .lightbox-nav.prev { left: 8px; }
+  .lightbox-nav.next { right: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lightbox-backdrop, .lightbox-shell { animation: none; }
+  .proof-expand { transition: none; }
+}
