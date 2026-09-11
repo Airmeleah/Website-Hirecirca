@@ -1093,7 +1093,7 @@ p { margin: 0; }
     radial-gradient(700px 300px at 50% 0%, rgba(147, 51, 234, 0.16), transparent 70%),
     #0A0711;
   border-top: 1px solid var(--glass-border);
-  color: rgba(255,255,255,0.72);
+  color: #fff;
   padding: 72px 0 30px;
 }
 .footer-top {
@@ -1324,3 +1324,16 @@ p { margin: 0; }
   .lightbox-backdrop, .lightbox-shell { animation: none; }
   .proof-expand { transition: none; }
 }
+
+/* the whole footer runs at full white -- copy, links and mark -- at every
+   width, rather than the 72% body copy it started with */
+.site-footer { color: #fff; }
+.footer-desc,
+.footer-col a,
+.footer-bottom,
+.footer-bottom a,
+.footer-bottom .legal-links a { color: #fff; }
+.footer-social a { border-color: rgba(255, 255, 255, 0.4); color: #fff; }
+/* flattens the mark's gradients to a white silhouette; its shapes are
+   separated by real transparent gaps, so the two figures still read */
+.footer-brand img { filter: brightness(0) invert(1); }
