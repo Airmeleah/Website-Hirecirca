@@ -397,10 +397,10 @@ p { margin: 0; }
 }
 .hero-trust .avatars { display: flex; }
 .hero-trust .avatars span {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 30px; height: 30px; border-radius: 50%;
   background: var(--brand-gradient-deep);
   border: 2px solid rgba(255,255,255,0.28);
-  margin-left: -8px;
+  margin-left: -7px;
   /* initials sit centred in the dot, always white */
   display: flex;
   align-items: center;
@@ -415,6 +415,9 @@ p { margin: 0; }
   box-sizing: border-box;
 }
 .hero-trust .avatars span:first-child { margin-left: 0; }
+/* the next dot covers this one's right edge — bias the initials left so
+   they sit in the part that stays visible */
+.hero-trust .avatars span:not(:last-child) { padding-right: 7px; }
 
 .hero-stage {
   position: relative;
@@ -1225,7 +1228,7 @@ p { margin: 0; }
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  max-width: min(92vw, 560px);
+  max-width: min(94vw, 620px);
   max-height: 94vh;
   animation: lbRise 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -1243,8 +1246,7 @@ p { margin: 0; }
   display: block;
   width: auto;
   max-width: 100%;
-  max-height: 84vh;
-  object-fit: contain;
+  height: auto;
   margin: 0 auto;
 }
 .lightbox-bar {
@@ -1283,8 +1285,9 @@ p { margin: 0; }
 .lightbox-close:hover,
 .lightbox-nav:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.07); }
 .lightbox-close {
-  top: -46px; right: 0;
+  top: 10px; right: 10px;
   width: 38px; height: 38px;
+  background: rgba(7, 6, 11, 0.82);
 }
 .lightbox-close svg { width: 18px; height: 18px; }
 .lightbox-nav {
@@ -1309,8 +1312,7 @@ p { margin: 0; }
   .lightbox { padding: 14px; }
   .lightbox-shell { max-width: 100%; max-height: 96vh; gap: 10px; }
   .lightbox-stage { max-height: 74vh; border-radius: 16px; }
-  .lightbox-stage img { max-height: none; width: 100%; }
-  .lightbox-close { top: 8px; right: 8px; background: rgba(7, 6, 11, 0.82); }
+  .lightbox-stage img { width: 100%; }
   /* no room beside the image on a phone, so the arrows overlay its edges */
   .lightbox-nav { width: 40px; height: 40px; margin-top: -20px; background: rgba(7, 6, 11, 0.7); }
   .lightbox-nav svg { width: 18px; height: 18px; }
