@@ -21,6 +21,9 @@
   --brand-gradient-text: linear-gradient(105deg, #FFFFFF 0%, #E9D5FF 42%, #C084FC 100%);
   /* deeper ramp for dots carrying white type — light stops fail on white */
   --brand-gradient-deep: linear-gradient(135deg, #8B3DE8 0%, #4C1D6E 100%);
+  /* flat fill for primary buttons -- brightest purple that still clears
+     4.5:1 against a white label (5.38:1) */
+  --btn-purple: #9333EA;
 
   /* Dark canvas */
   --bg: #07060B;
@@ -171,7 +174,7 @@ p { margin: 0; }
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: var(--brand-gradient);
+  background: var(--btn-purple);
   color: #fff;
   box-shadow: 0 12px 30px -10px rgba(139, 61, 232, 0.55);
 }
@@ -626,7 +629,7 @@ p { margin: 0; }
 .service-icon {
   width: 58px; height: 58px;
   border-radius: 16px;
-  background: var(--brand-gradient);
+  background: var(--btn-purple);
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 26px;
   margin-bottom: 26px;
